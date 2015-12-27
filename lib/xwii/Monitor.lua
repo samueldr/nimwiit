@@ -4,7 +4,6 @@
 local ffi   = require "ffi"
 local class = require "30log"
 local Monitor = class("Monitor")
-local Interface = require "xwii.Interface"
 
 -- ffi imports {{{
 ffi.cdef [[
@@ -38,9 +37,10 @@ function Monitor:init(poll, direct)
 	assert(self._mon, "Could not create monitor")
 end
 
--- Returns an Interface when a new one is available.
+-- Returns the path of the device, when a new one is available.
 -- Otherwise returns nil.
 -- Is affected by the poll parameter of init.
+-- Use this path to construct and Interface.
 function Monitor:poll()
 	local entry = nil
 	entry = _poll(self._mon)
@@ -48,7 +48,7 @@ function Monitor:poll()
 		return nil
 	end
 	entry = ffi.string(entry)
-	return Interface(entry)
+	return entry
 end
 
 function Monitor:destroy()
