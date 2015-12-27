@@ -27,6 +27,7 @@ end
 local Monitor   = require "xwii.Monitor"
 local Interface = require "xwii.Interface"
 local utils     = require "utils"
+local JoyDevice = require "JoyDevice"
 
 local mon = Monitor()
 local motes = {}
@@ -38,8 +39,8 @@ while true do
 end
 
 if not idx or idx < 1 then
-	print("Found Wiiidxs: ".. #idxs)
-	for i,idx in pairs(idxs) do
+	print("Found Wiiidxs: ".. #motes)
+	for i,idx in pairs(motes) do
 		print(' → #'.. i..": "..idx)
 	end
 	os.exit(0)
@@ -52,6 +53,7 @@ end
 mon:destroy()
 
 if idx then
+	local device = JoyDevice()
 	local mote = Interface(motes[idx])
 	for _,led in pairs{1,2,3,4} do
 		mote:set_led(led, false)
@@ -68,7 +70,26 @@ if idx then
 	local ev = mote:dispatch_event()
 		if ev then
 			if ev.ev_name == 'KEY' then
-				print(inspect(ev))
+				if ev.key.code > 3 then
+					if ev.key.state == 1 then
+						device:button_press(device.buttons['BTN_'..ev.key.code-3])
+					else
+						device:button_release(device.buttons['BTN_'..ev.key.code-3])
+					end
+				else
+					local direction = ev.key.name
+					-- To rotate the joystick 90°
+					if     direction == 'LEFT' then direction = 'DOWN'
+					elseif direction == 'UP' then direction = 'LEFT'
+					elseif direction == 'RIGHT' then direction = 'UP'
+					elseif direction == 'DOWN' then direction = 'RIGHT'
+					else  end
+					if ev.key.state == 1 then
+						device:direction_press(direction)
+					else
+						device:direction_release(direction)
+					end
+				end
 			elseif ev.ev_name == 'WATCH' then
 				print(inspect(ev))
 				-- Assumes 0 is bitmask of nothing connected.
