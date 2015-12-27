@@ -2,6 +2,7 @@
 package.path = "?/init.lua;"..package.path
 package.path = "lib/?.lua;"..package.path
 package.path = "lib/?/init.lua;"..package.path
+local inspect = require "inspect"
 require "strict"
 -- }}}
 
@@ -28,10 +29,27 @@ while true do
 		else
 			mote:set_leds({false,true,false,true})
 		end
+
+		print(idx , "Device type: ", mote:get_devtype())
+		print(idx , "Device extensions: ", mote:get_extension())
 	end
 end
 print("Found wiimotes: ",#motes)
 
+-- FIXME : Add "global fd batch" thing so that they all can wait for fd.
+while #motes > 0 do
+	for i,mote in pairs(motes) do
+		local ev = mote:dispatch_event()
+		if ev then
+			if ev.ev_name == 'KEY' then
+				print(i, inspect(ev))
+			end
+		else
+			--print("...")
+			utils.usleep(20000)
+		end
+	end
+end
 
 mon:destroy()
 print("All done")
