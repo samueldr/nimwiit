@@ -426,14 +426,16 @@ function Interface:set_leds(leds)
 end
 -- }}}
 -- Events dispatch {{{
--- Can be called at any time. When no events are available, returns nil.
-function Interface:dispatch_event()
+-- Can be called at any time. When timeout is not -1 and no events are available, returns nil.
+-- A timeout of -1, the default, blocks for an event with polling.
+function Interface:dispatch_event(poll_timeout)
+	poll_timeout = poll_timeout or -1
 	local fds = {
 		struct_pollfd()
 	}
 	fds[1].fd = iface_get_fd(self._iface)
 	fds[1].events = POLLIN;
-	local polled = poll(fds, 0)
+	local polled = poll(fds, poll_timeout)
 	assert(polled >= 0, err(ffi.errno()))
 	if polled > 0 then
 		local ev = struct_event()
