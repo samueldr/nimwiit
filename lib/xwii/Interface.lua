@@ -3,10 +3,12 @@
 
 local ffi   = require "ffi"
 local class = require "30log"
+local utils = require "utils"
 local Interface = class("Interface")
 
 -- ffi imports {{{
--- Global C stuff {{{
+-- Poll stuff {{{
+-- TODO : Implement better generic polling interface.
 ffi.cdef [[
 	static const int EAGAIN = 11;
 	static const int POLLIN = 1;
@@ -20,10 +22,6 @@ ffi.cdef [[
 	typedef unsigned long int nfds_t;
 	int poll(struct pollfd fds[], nfds_t nfds, int timeout);
 	char *strerror(int errnum);
-	struct timeval {
-		long tv_sec;
-		long tv_usec;
-	};
 ]]
 local EAGAIN = ffi.C.EAGAIN
 local POLLIN = ffi.C.POLLIN
