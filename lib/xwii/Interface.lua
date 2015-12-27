@@ -372,11 +372,13 @@ function Interface:init(path)
 	ret = iface_new(iface, path)
 	assert(ret == 0, "Cannot create xwii_iface '"..path.."'. "..err(ret))
 	self._iface = iface[0]
+	self:open()
+end
 
-	-- FIXME : Add watching to watch for all (new or removed) interfaces.
-	ret = iface_open(self._iface,
+function Interface:open()
+	local ret = iface_open(self._iface,
 		bit.bor(iface_available(self._iface), XWII_IFACE_WRITABLE))
-	--assert(ret == 0, "Cannot open xwii_iface '"..path.."'. "..err(ret))
+	assert(ret == 0, "Cannot open xwii_iface. "..err(ret))
 end
 
 -- devtype {{{
@@ -448,6 +450,9 @@ function Interface:dispatch_event()
 				name  = keys_by_name[ev.v.key.code],
 				state = ev.v.key.state,
 			}
+		elseif ev.type == events.WATCH then
+			self:open()
+			event['available'] = iface_available(self._iface)
 		end
 		return event
 	end
